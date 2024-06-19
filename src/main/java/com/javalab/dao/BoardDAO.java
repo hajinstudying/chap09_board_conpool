@@ -1,11 +1,14 @@
 package com.javalab.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 import com.javalab.vo.BoardVO;
 
@@ -17,40 +20,24 @@ import com.javalab.vo.BoardVO;
  */
 
 public class BoardDAO {
+	
+	private DataSource dataSource;
+	private Connection conn = null; // 데이터베이스 접속을 위한 커넥션 객체
+	private PreparedStatement pstmt = null; // 쿼리문을 만들고 실행해주는 객체
+	private ResultSet rs = null; // 쿼리 결과를 받아오는 객체
 
-	// 멤버 변수로 데이터베이스 관련 객체를 전역 변수로 정의
-	// jdbc 드라이버 로딩 문자열
-	private static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
-	// 데이터베이스 접속 문자열
-	private static final String DB_URL = "jdbc:oracle:thin:@localhost:1521:orcl";
-	// 접속 계정(아이디/비밀번호)
-	private static final String DB_USER = "mboard";
-	private static final String DB_PASSWORD = "1234";
-
-	Connection conn = null; // 데이터베이스 접속을 위한 커넥션 객체
-	PreparedStatement pstmt = null; // 쿼리문을 만들고 실행해주는 객체
-	ResultSet rs = null; // 쿼리 결과를 받아오는 객체
-
-	/*
-	 * connectDB() :
-	 * JDBC 드라이버 로딩과 커넥션 객체 생성하는 메소드
-	 * Connection 담당 객체인 conn을 생성하여 저장해준다.
-	 * throws :
-	 * 예외가 발생하면 호출한 곳에서 처리하도록 한다.
-	 * 그러나 여기서는 메소드 내에서도 잡아주고 있어서(2중) 필요는 x
-	 */
-	public void connectDB() throws SQLException, ClassNotFoundException {
-
+	/* 생성자 */
+	public BoardDAO () {
 		try {
-			Class.forName(JDBC_DRIVER); // jdbc 드라이버 로드
-			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD); // 데이터베이스 커넥션 객체 얻기
-			System.out.println("커넥션 객체를 획득했습니다.");
+			Context ctx = new InitialContext();
+			dataSource = (DataSource)ctx.lookup("java:comp/env/jdbc/oracle");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
-
+	
+	
+	
 	/*
 	 * insertBoard(...) :
 	 * 게시물 등록 처리 메소드
@@ -64,8 +51,7 @@ public class BoardDAO {
 
 		try {
 
-			// connectDB 메소드 호출
-			connectDB();
+			conn = dataSource.getConnection();
 
 			// 멤버 추가 쿼리
 			String sql = "INSERT INTO board(bno, title, content, member_id, reg_date) ";
@@ -79,7 +65,7 @@ public class BoardDAO {
 
 			row = pstmt.executeUpdate(); // 실행한 행의 갯수가 담김
 
-		} catch (SQLException | ClassNotFoundException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("게시물 등록 중 오류가 발생했습니다.");
 		} finally {
@@ -102,8 +88,8 @@ public class BoardDAO {
 		List<BoardVO> boardList = new ArrayList<>();
 		
 		try {
-			// connectDB 메소드 호출
-			connectDB();
+			
+			conn = dataSource.getConnection();
 			
 			String sql = "SELECT bno, title, content, member_id, reg_date, hit_no FROM board ORDER BY bno";
 			pstmt = conn.prepareStatement(sql);
@@ -121,7 +107,7 @@ public class BoardDAO {
 				boardList.add(boardVO); // 게시물 목록에 추가
 			}
 		// '|' : 자바7에서 도입된 멀티캐치 구문에서 여러 예외처리를 한번에 할 때 사용하는 문법 '||'(or)는 사용할 수 없다
-		} catch (SQLException | ClassNotFoundException e) {
+		} catch (SQLException e) {
 			System.out.println("getBoardList() ERR : " + e.getMessage());
 			e.printStackTrace();
 		} finally {
@@ -141,8 +127,8 @@ public class BoardDAO {
 		BoardVO boardVO = null;	
 		
 		try {
-			//db랑 연결
-			connectDB();
+			
+			conn = dataSource.getConnection();
 			
 			// 게시물 조회 쿼리
 			String sql = "SELECT bno, title, content, member_id, reg_date, hit_no FROM board WHERE bno = ?";
@@ -161,7 +147,7 @@ public class BoardDAO {
 				boardVO.setRegDate(rs.getDate("reg_date"));
 				boardVO.setHitNo(rs.getInt("hit_no"));
 			}
-		} catch (SQLException | ClassNotFoundException e) {
+		} catch (SQLException e) {
 			System.out.println("getBoard() ERR : " + e.getMessage());
 			e.printStackTrace();
 		} finally {
@@ -178,15 +164,15 @@ public class BoardDAO {
 	public void incrementHitNo(int bno) {
 		System.out.println("incrementHitNo() 메소드가 실행되었습니다.");
 		try {
-			//DB랑 연결
-			connectDB();
+			
+			conn = dataSource.getConnection();
 			
 			// 게시물의 조회수 증가 쿼리
 		    String updateHitSql = "UPDATE board SET hit_no = hit_no + 1 WHERE bno = ?";
 		    pstmt = conn.prepareStatement(updateHitSql);
 		    pstmt.setInt(1, bno);
 		    pstmt.executeUpdate();
-		} catch (SQLException | ClassNotFoundException e) {
+		} catch (SQLException e) {
 			System.out.println("incrementHitNo() ERR : " + e.getMessage());
 			e.printStackTrace();
 		} finally {
@@ -205,8 +191,8 @@ public class BoardDAO {
 		int row = 0;
 		
 		try {
-			// 커넥션 객체 얻기
-			connectDB();
+			
+			conn = dataSource.getConnection();
 			
 			// 게시물 업데이트 쿼리
 			String sql = "UPDATE board SET title = ?, content = ? WHERE bno = ?";
@@ -217,7 +203,7 @@ public class BoardDAO {
 			
 			row =  pstmt.executeUpdate();
 			
-		} catch (SQLException | ClassNotFoundException e) {
+		} catch (SQLException e) {
 			System.out.println("updateBoard() ERR : " + e.getMessage());
 			e.printStackTrace();
 		} finally {
@@ -238,8 +224,8 @@ public class BoardDAO {
 		
 		// 파라미터 가져오기
 		try {
-			// 커넥션 객체 얻기
-			connectDB();
+			
+			conn = dataSource.getConnection();
 			
 			// 게시물 삭제 쿼리문
 			String sql = "DELETE board WHERE bno = ?";
@@ -247,7 +233,7 @@ public class BoardDAO {
 			pstmt.setInt(1, bno);
 		    row = pstmt.executeUpdate(); // 쿼리문 실행 영향 받은 행수 반환
 		    
-		} catch (SQLException | ClassNotFoundException e) {
+		} catch (SQLException e) {
 			System.out.println("deleteBoard() ERR : " + e.getMessage());
 			e.printStackTrace();
 		} finally {

@@ -1,10 +1,12 @@
 package com.javalab.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 import com.javalab.vo.MemberVO;
 
@@ -17,36 +19,23 @@ import com.javalab.vo.MemberVO;
  */
 
 public class MemberDAO {
+	
+	private DataSource dataSource;
+	private Connection conn = null; // 데이터베이스 접속을 위한 커넥션 객체
+	private PreparedStatement pstmt = null; // 쿼리문을 만들고 실행해주는 객체
+	private ResultSet rs = null; // 쿼리 결과를 받아오는 객체
 
-	// 멤버 변수로 데이터베이스 관련 객체를 전역 변수로 정의
-	// jdbc 드라이버 로딩 문자열
-	private static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
-	// 데이터베이스 접속 문자열
-	private static final String DB_URL = "jdbc:oracle:thin:@localhost:1521:orcl";
-	// 접속 계정(아이디/비밀번호)
-	private static final String DB_USER = "mboard";
-	private static final String DB_PASSWORD = "1234";
-
-	Connection conn = null; // 데이터베이스 접속을 위한 커넥션 객체
-	PreparedStatement pstmt = null; // 쿼리문을 만들고 실행해주는 객체
-	ResultSet rs = null; // 쿼리 결과를 받아오는 객체
-
-	/*
-	 * connectDB() : JDBC 드라이버 로딩과 커넥션 객체 생성하는 메소드 Connection 담당 객체인 conn을 생성하여
-	 * 저장해준다.
-	 */
-	public void connectDB() throws SQLException, ClassNotFoundException {
-
+	/* 생성자 */
+	public MemberDAO() {
 		try {
-			Class.forName(JDBC_DRIVER); // jdbc 드라이버 로드
-			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD); // 데이터베이스 커넥션 객체 얻기
-			System.out.println("커넥션 객체를 획득했습니다.");
-		} catch (Exception e) {
+			Context ctx = new InitialContext(); // 커넥션 풀을 참조하기 위한 환경변수(네이밍 컨텍스트)를 가지고 있는 객체
+			dataSource = (DataSource)ctx.lookup("java:comp/env/jdbc/oracle");
+		} catch (Exception e){
 			e.printStackTrace();
 		}
-
 	}
-
+	
+	
 	/*
 	 * insertMember(...) : 회원가입 처리 메소드
 	 * 데이터 하나하나 전달받지 말고(^^;) memberVO 객체를 파라미터로 전달받는다.
@@ -60,10 +49,8 @@ public class MemberDAO {
 		int row = 0;
 
 		try {
-
-			// connectDB 메소드 호출
-			connectDB();
-
+			conn = dataSource.getConnection();
+			
 			// 멤버 추가 쿼리
 			String sql = "INSERT INTO member(member_id, password, name, email) VALUES(?, ?, ?, ?)";
 

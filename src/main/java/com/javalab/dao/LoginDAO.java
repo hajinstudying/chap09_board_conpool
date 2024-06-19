@@ -1,12 +1,14 @@
 package com.javalab.dao;
 
-import com.javalab.vo.*;
-
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+
+import com.javalab.vo.MemberVO;
 
 /*
  * DAO (Data Access Object) 
@@ -18,31 +20,26 @@ import java.sql.SQLException;
 
 
 public class LoginDAO {
-	// 멤버 변수로 데이터베이스 관련 객체를 전역 변수로 정의
-	// jdbc 드라이버 로딩 문자열
-	private static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
-	// 데이터베이스 접속 문자열
-	private static final String DB_URL = "jdbc:oracle:thin:@localhost:1521:orcl";
-	// 접속 계정(아이디/비밀번호)
-	private static final String DB_USER = "mboard";
-	private static final String DB_PASSWORD = "1234";
-
-	Connection conn = null; // 데이터베이스 접속을 위한 커넥션 객체
-	PreparedStatement pstmt = null; // 쿼리문을 만들고 실행해주는 객체
-	ResultSet rs = null; // 쿼리 결과를 받아오는 객체
+	
+	private DataSource dataSource; // 커넥션 풀 객체 type
+	private Connection conn = null; // 데이터베이스 접속을 위한 커넥션 객체
+	private PreparedStatement pstmt = null; // 쿼리문을 만들고 실행해주는 객체
+	private ResultSet rs = null; // 쿼리 결과를 받아오는 객체
 
 	/*
-	 * connectDB() : 
-	 * JDBC 드라이버 로딩과 커넥션 객체 생성하는 메소드
-	 * Connection 담당 객체인 conn을 생성하여 저장해준다.
+	 * 생성자
+	 * 1. JNDI(java naming and directory interface)
+	 *  - 네이밍 인터페이스 : 이름(jdbc/oracle)으로 특정 자원에 대한 정보를 참조하는 방법
+	 *  - InitialContext : 기본 네이밍 컨텍스트를 제공하는 클래스. (key-value로 가지고 있다.)
+	 *  				   이 객체를 통해서 초기 네이밍 컨텍스트 객체를 생성한다.
+	 * 2. java:comp/env : 네이밍 컨텍스트에서 애플리케이션의 환경변수를 가져오기 위한 루트 경로를 말한다.
+	 * 					  환경 변수 중에서 'jdbc/oracle'인 것(커넥션 풀)을 찾는 것
 	 */
-	public void connectDB() throws SQLException, ClassNotFoundException {
-
+	public LoginDAO() {
 		try {
-			Class.forName(JDBC_DRIVER); // jdbc 드라이버 로드
-			conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD); // 데이터베이스 커넥션 객체 얻기
-			System.out.println("커넥션 객체를 획득했습니다.");
-		} catch (Exception e) {
+			Context ctx = new InitialContext(); // 커넥션 풀을 참조하기 위한 환경변수(네이밍 컨텍스트)를 가지고 있는 객체
+			dataSource = (DataSource)ctx.lookup("java:comp/env/jdbc/oracle");
+		} catch (Exception e){
 			e.printStackTrace();
 		}
 	}
@@ -58,8 +55,7 @@ public class LoginDAO {
 		MemberVO member = null;
 
 		try {
-			//connectDB 메소드 호출
-			connectDB();
+			conn = dataSource.getConnection();
 			
 			// 아이디와 비번이 db에 존재하는지를 쿼리문 where절로 검사
 			String sql = "SELECT member_id, name, email FROM member WHERE member_id = ? AND password = ?";

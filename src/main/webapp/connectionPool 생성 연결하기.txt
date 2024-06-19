@@ -1,0 +1,87 @@
+1. apache commons dbcp2 파일 다운로드 후 WEB-INF의 lib에 넣기
+2. META-INF에 xml 파일 생성(others메뉴로) - 이름을 context.xml로
+3. 아래 내용 복붙 후 저장
+=>
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>WEB-INF/tomcat-web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+
+
+	 <!-- Resource 
+	 - DataSource 객체를 설정하고 어떻게 초기화할지 정보제공
+	 데이터베이스 연결을 위한 DataSource 객체의 설정 정보 정의 
+	 이 DataSource 객체는 데이터베이스 연결 풀을 제공하며, 
+	 애플리케이션 코드에서 JNDI 이름 "jdbc/oracle"을 
+	 사용하여 이 DataSource 객체를 조회할수 있게됨. 조회된 
+	 DataSource 객체를 통해 데이터베이스 커넥션(연결)을 얻을 수 있다. 
+	 
+	 여기서 바로 어플리케이션에서 사용가능한 DataSource 객체가
+	 생성되는 것은 아니며 Tomcat과 같은 컨테이너에게 어떻게 
+	 DataSource 객체를 설정하고 초기화할지에 대한 정보를 제공함.
+	 
+	 [Apache Commons DBCP2 설정]
+	 maxIdle : 커넥션 풀에서 유휴 상태로 유지할 수 있는 최대 커넥션 수
+	 maxTotal : Commons DBCP2에서 사용하는 속성으로, 풀에서 동시에 사용할 수 있는 최대 활성 커넥션 수
+	 maxWaitMillis : 커넥션 풀에서 커넥션을 가져오기 위해 대기할 수 있는 최대 시간을 밀리초 단위로 지정합니다. 
+                        여기서는 -1로 설정되어 있어, 무한 대기를 의미 즉, 커넥션이 반환될 때까지 기다림.
+    initialSize="5" : 최초 요청이 올때 즉, 초기화 시점에 해당 수만큼의 커넥션을 미리 만들어 
+	 -->
+
+    <Resource name="jdbc/oracle"
+              auth="Container"
+              type="javax.sql.DataSource"
+              driverClassName="oracle.jdbc.driver.OracleDriver"
+              url="jdbc:oracle:thin:@localhost:1521:orcl"
+              username="mboard"
+              password="1234"
+              maxTotal="20"
+              maxIdle="10"
+              maxWaitMillis="-1"
+              initialSize="5"
+/>    
+</Context>
+
+4.loginDAO에 가서 DB커넥션 부분 삭제하고 커넥션 풀 객체 type 추가
+=>
+private DataSource dataSource;
+
+이 때 DataSource의 클래스 임포트 선택하는 부분에서 톰캣어쩌고는 X
+=> import javax.sql.DataSource;
+로 임포트한다.
+
+5. 생성자도 추가
+=>
+/*
+	 * 생성자
+	 * 1. JNDI(java naming and directory interface)
+	 *  - 네이밍 인터페이스 : 이름(jdbc/oracle)으로 특정 자원에 대한 정보를 참조하는 방법
+	 *  - InitialContext : 기본 네이밍 컨텍스트를 제공하는 클래스. (key-value로 가지고 있다.)
+	 *  				   이 객체를 통해서 초기 네이밍 컨텍스트 객체를 생성한다.
+	 * 2. java:comp/env : 네이밍 컨텍스트에서 애플리케이션의 환경변수를 가져오기 위한 루트 경로를 말한다.
+	 * 					  환경 변수 중에서 'jdbc/oracle'인 것(커넥션 풀)을 찾는 것
+	 */
+	 
+	public LoginDAO() {
+		try {
+			Context ctx = new InitialContext(); // 커넥션 풀을 참조하기 위한 환경변수(네이밍 컨텍스트)를 가지고 있는 객체
+			dataSource = (DataSource)ctx.lookup("java:comp/env/jdbc/oracle");
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+6. connectDB(){} 메소드 삭제
+
+7. 다른 메소드에서 호출했던 connectDB(); 삭제하고
+=>
+conn = dataSource.getConnection();
+추가. 이제 이거로 객체 얻음
+
+
+-----------------------------
+설명.
+프로젝트 익스플로러의 Servers 폴더에도 context.xml이 있는데 이걸 바꾸면 열어둔 모든 프로젝트에 영향을 준다.
+따라서 그렇게 사용하지 않음. 해당 프로젝트의 MATA-INF에 넣는 것.
