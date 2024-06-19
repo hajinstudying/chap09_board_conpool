@@ -79,3 +79,17 @@ input[type="text"], input[type="password"], textarea {
 textarea {
 	height: 100px;
 }
+
+/* 검색바 css */
+#searchForm {
+	display: flex;
+	margin-bottom: 10px;
+}
+#search {
+	margin: 0 10px;
+	padding: 5px;
+}
+label[for="search"] {
+	width: 100px;
+}
+

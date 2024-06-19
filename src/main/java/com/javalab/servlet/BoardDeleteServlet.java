@@ -51,7 +51,7 @@ public class BoardDeleteServlet extends HttpServlet {
 		} else { // 삭제 실패
 			// 에러 메세지
 			request.setAttribute("error", "게시물 삭제에 실패했습니다.");
-			RequestDispatcher rd = request.getRequestDispatcher(contextPath + "/boardDetail?bno=" + bno);
+			RequestDispatcher rd = request.getRequestDispatcher("/boardDetail?bno=" + bno);
 			rd.forward(request, response);
 		}
 	}

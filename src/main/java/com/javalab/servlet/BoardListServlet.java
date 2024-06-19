@@ -34,7 +34,30 @@ public class BoardListServlet extends HttpServlet {
 		//request 영역에 boardList 저장
 		request.setAttribute("boardList", boardList);
 		
-		// 저장한 boardLIst를 출력할 페이지인 boardList.jsp로 이동
+		// 저장한 boardList를 출력할 페이지인 boardList.jsp로 이동
+		RequestDispatcher rd = request.getRequestDispatcher("/boardList.jsp");
+		rd.forward(request, response);
+	}
+	
+	/*
+	 * 게시물 검색 목록 조회
+	 */
+	protected void doPost (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//디버깅 문자열
+		System.out.println("boardListServlet의 doPost()메소드가 실행되었습니다.");
+		
+		// 파라미터 전달받기
+		request.setCharacterEncoding("utf-8");
+		String input = request.getParameter("search");
+		
+		// 데이터베이스 전담 객체 생성
+		BoardDAO boardDAO = new BoardDAO();
+		
+		// 검색결과 목록 가져오고 request 영역에 저장
+		List<BoardVO> boardList = boardDAO.searchBoard(input);
+		request.setAttribute("boardList", boardList);
+		
+		// boardList페이지로 이동시키기
 		RequestDispatcher rd = request.getRequestDispatcher("/boardList.jsp");
 		rd.forward(request, response);
 	}

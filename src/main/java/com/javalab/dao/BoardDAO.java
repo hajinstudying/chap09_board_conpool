@@ -137,7 +137,7 @@ public class BoardDAO {
 		
 			rs = pstmt.executeQuery(); // 해당 게시물 반환
 		
-			while (rs.next()) { // 게시물 1건 반환
+			if (rs.next()) { // 게시물 1건 반환
 				// 전달받은 값을 바로 boardVO 객체에 저장
 				boardVO = new BoardVO();
 				boardVO.setBno(rs.getInt("bno"));
@@ -214,7 +214,7 @@ public class BoardDAO {
 	
 	/*
 	 * deleteBoard(int bno) :
-	 * 게시물 삭제 쿼리
+	 * 게시물 삭제 메소드
 	 */
 	public int deleteBoard(int bno) {
 		// 디버깅 문자열
@@ -222,7 +222,6 @@ public class BoardDAO {
 		// 반환값 선언
 		int row = 0;
 		
-		// 파라미터 가져오기
 		try {
 			
 			conn = dataSource.getConnection();
@@ -241,6 +240,53 @@ public class BoardDAO {
 		}
 		return row;
 	}
+	
+	/*
+	 * searchBoard() :
+	 * 게시물 검색 메소드
+	 */
+	public List<BoardVO> searchBoard(String input){
+		//디버깅 문자열
+		System.out.println("searchBoard() 메소드를 실행했습니다.");
+		//반환할 목록 일단 선언
+		List<BoardVO> boardList = new ArrayList<>();
+		
+		try {
+			//커넥션 객체 얻기
+			conn = dataSource.getConnection();
+			
+			//쿼리문 실행
+			String sql = "SELECT bno, title, content, member_id, reg_date, hit_no ";
+			sql += " FROM board WHERE title LIKE ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%" + input + "%");
+			rs = pstmt.executeQuery(); // 해당 게시물 반환
+			
+			//게시물 반환
+			while (rs.next()) {
+				// 전달받은 값을 바로 boardVO 객체에 저장
+				BoardVO boardVO = new BoardVO();
+				boardVO.setBno(rs.getInt("bno"));
+				boardVO.setTitle(rs.getString("title"));
+				boardVO.setContent(rs.getString("content"));
+				boardVO.setMemberId(rs.getString("member_id"));
+				boardVO.setRegDate(rs.getDate("reg_date"));
+				boardVO.setHitNo(rs.getInt("hit_no"));
+				//리스트에 저장
+				boardList.add(boardVO);
+			}
+			
+		} catch (SQLException e) {
+			System.out.println("searchBoard() ERR : " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			closeResource();
+		}
+		return boardList;
+		
+	}
+ 	
+	
 	
 	
 	

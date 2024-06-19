@@ -4,7 +4,7 @@
 '.project' 파일을 메모장으로 연 다음 프로젝트 이름 변경해줌
 1.
 빌드 패스에서
-librayry -> 자바 11fh
+library -> 자바 11fh
 facets -> 자바 11로
 java compiler -> 간혹 자동으로 안 바뀜
 
@@ -16,3 +16,8 @@ java compiler -> 간혹 자동으로 안 바뀜
 4.
 톰캣 서버 클릭 -> overview와 modules 중에서 
 modules 선택해서 이름 변경 -> 저장 필수
+
+5.
+프로젝트 디렉토리 파일의 .settings 폴더 안에서
+org.eclipse.wst.common.component를 메모장으로 열기
+->wb-module deploy-name 요소의 값을 현재 프로젝트 명으로 바꿔줌

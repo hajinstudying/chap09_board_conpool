@@ -34,6 +34,13 @@
 		
 		<main>
 			<h3>게시물 목록</h3>
+			<!-- 검색폼 -->
+			<form action="${contextPath}/boardList"  method="post" id="searchForm">
+				<label for="search">제목 검색 : </label>
+				<input type="text" name="search" id="search">
+				<input type="submit" value="검색">
+			</form>
+			
 			<c:if test="${empty boardList}">
 				<p>게시물이 존재하지 않습니다.</p>
 			</c:if>		
