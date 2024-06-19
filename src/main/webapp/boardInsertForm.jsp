@@ -10,9 +10,12 @@
 <head>
 <meta charset="UTF-8">
 <title>boardInsertForm - servlet board</title>
-<!-- css는 상대경로로, 현재 파일의 위치에서 찾게된다. -->
+<!-- css는 상대경로로, 현재 파일의 위치에서 찾게된다. :D -->
 <link rel="stylesheet" type="text/css" href="css/board.css" />
-
+<script src='<c:url value="/ckeditor/ckeditor.js"/>'>
+</script>
+<script src='<c:url value="/ckeditor/config.js"/>'>
+</script>
 </head>
 <body>
 	<div class="container">
@@ -41,11 +44,14 @@
 					</div>
 					<div>
 						<label for="content">내용</label>
-						<textarea name="content" id="content" required></textarea>
+						 <textarea id="content" name="content" cols="80" rows="10" required>
+						 </textarea>
+  						<script>CKEDITOR.replace('content');</script>
+
 					</div>
 					<div>
-						<input type="submit" value="저장"> <input type="reset"
-							value="다시쓰기">
+						<input type="submit" value="저장">
+						<input type="reset" value="다시쓰기">
 					</div>
 				</form>
 			</c:if>

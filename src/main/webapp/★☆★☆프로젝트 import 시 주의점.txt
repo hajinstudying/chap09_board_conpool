@@ -1,0 +1,18 @@
+다른 사람의 플젝을 임포트 하거나 프로젝트를 복사하거나 등등 
+
+0.
+'.project' 파일을 메모장으로 연 다음 프로젝트 이름 변경해줌
+1.
+빌드 패스에서
+librayry -> 자바 11fh
+facets -> 자바 11로
+java compiler -> 간혹 자동으로 안 바뀜
+
+2. targeted runtime
+톰캣 버전 맞추기 -> tomcat9
+
+3. web project settings에서 이름 변경
+
+4.
+톰캣 서버 클릭 -> overview와 modules 중에서 
+modules 선택해서 이름 변경 -> 저장 필수

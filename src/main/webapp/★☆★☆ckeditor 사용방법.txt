@@ -1,0 +1,18 @@
+1. ckeditor zip파일 다운
+2. 압축 풀고 ckeditor 폴더를 webapp 폴더에 넣기
+3. 사용할 jsp 파일의 css링크 아래, head 끝나기 전에 아래 스크립트 추가
+=>
+
+<script src='<c:url value="/ckeditor/ckeditor.js"/>'>
+</script>
+<script src='<c:url value="/ckeditor/config.js"/>'>
+
+4. <textarea></textarea> 태그 아래에 추가
+(여기서 content는 textarea의 name)
+=>
+ <textarea id="content" name="content" cols="80" rows="10" required>
+ </textarea>
+ <script>CKEDITOR.replace('content');</script>
+
+ 5. 새로운 프로젝트를 할 때는 ckeditor 신버전을 쓰거나
+ 네이버 smart editor를 사용 하는 것을 권장

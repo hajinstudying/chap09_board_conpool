@@ -11,6 +11,10 @@
 <meta charset="UTF-8">
 <title>boardUpadateForm</title>
 <link rel="stylesheet" type="text/css" href="css/board.css" />
+<script src='<c:url value="/ckeditor/ckeditor.js"/>'>
+</script>
+<script src='<c:url value="/ckeditor/config.js"/>'>
+</script>
 </head>
 <body>
 	<div class="container">
@@ -44,7 +48,10 @@
 					<div>
 						<label for="content">내용</label>
 						<!-- textarea는 태그 내용부를 붙여써줘야 공백이 안생김 -->
-						<textarea name="content" id="content" required>${boardVO.content}</textarea>
+						<textarea name="content" cols="150" rows="10" required>
+							${boardVO.content}
+						</textarea>
+						<script>CKEDITOR.replace('content');</script>
 					</div>
 					<div>
 						<input type="submit" value="수정"> <input type="reset"
