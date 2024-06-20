@@ -1,5 +1,6 @@
 package com.javalab.dao;
 
+import java.nio.file.attribute.AclEntryPermission;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +9,7 @@ import java.util.*;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.print.attribute.PrintJobAttribute;
 import javax.sql.DataSource;
 
 import com.javalab.vo.BoardVO;
@@ -102,31 +104,80 @@ public class BoardDAO {
 	 * getBoardList() :
 	 * 게시물 목록 조회 메소드
 	 */
-	public List<BoardVO> getBoardList() {
+	/*
+	 * public List<BoardVO> getBoardList() { // 디버깅 문자열
+	 * System.out.println("boardDAO의 getBoardList() 메소드가 호출되었습니다.");
+	 * 
+	 * //반환할 객체 일단 선언 List<BoardVO> boardList = new ArrayList<>();
+	 * 
+	 * try {
+	 * 
+	 * conn = dataSource.getConnection();
+	 * 
+	 * String sql =
+	 * "SELECT bno, title, content, member_id, reg_date, hit_no FROM board ORDER BY bno"
+	 * ; pstmt = conn.prepareStatement(sql); rs = pstmt.executeQuery(); // 게시물 목록 반환
+	 * 
+	 * while (rs.next()) { // 전달받은 값을 바로 객체로 저장 BoardVO boardVO = new BoardVO();
+	 * boardVO.setBno(rs.getInt("bno")); boardVO.setTitle(rs.getString("title")); //
+	 * content는 가져오지 않음. setter메소드로 속성을 넣고 있기 때문에 따로 생성자 설정할 필요는 x
+	 * boardVO.setMemberId(rs.getString("member_id"));
+	 * boardVO.setRegDate(rs.getDate("reg_date"));
+	 * boardVO.setHitNo(rs.getInt("hit_no")); boardList.add(boardVO); // 게시물 목록에 추가
+	 * } // '|' : 자바7에서 도입된 멀티캐치 구문에서 여러 예외처리를 한번에 할 때 사용하는 문법 '||'(or)는 사용할 수 없다 }
+	 * catch (SQLException e) { System.out.println("getBoardList() ERR : " +
+	 * e.getMessage()); e.printStackTrace(); } finally { closeResource(); } return
+	 * boardList; }
+	 */
+	
+	
+	public List<BoardVO> getBoardList(BoardVO boardVO) {
 		// 디버깅 문자열
 		System.out.println("boardDAO의 getBoardList() 메소드가 호출되었습니다.");
 				
 		//반환할 객체 일단 선언
 		List<BoardVO> boardList = new ArrayList<>();
 		
+		int start = 0; // 시작번호
+		int end = 0; // 끝 번호
+		
+		/*
+		 * 첫 게시물과 끝 게시물 번호 구하는 공식
+		 * - 시작 게시물 번호 : (사용자가 요청한 페이지 -1) * 한 페이지에 보여줄 게시물 수 + 1
+		 * '(사용자가 요청한 페이지 -1) * 한 페이지에 보여줄 게시물 수' : pageNum에 따른 10의자리수 구하는 것 
+		 * - 끝 게시물 번호 : 시작번호 + 한 페이지에 보여줄 게시물 수 - 1
+		 */
+		
+		
+		start = (Integer.parseInt(boardVO.getPageNum()) - 1) * boardVO.getListCount() + 1;	
+		end = start + boardVO.getListCount() - 1;
+		
 		try {
+			StringBuffer sql = new StringBuffer(); // String과 유사한 문자열 객체
+			sql.append("select a.bno, a.title, a.member_id, a.reg_date, hit_no ");
+			sql.append("from ( ");
+			sql.append("select b.*, row_number() over(order by b.reg_date asc) row_num ");
+			sql.append("from board b ");
+			sql.append(") a ");
+			sql.append("where a.row_num between ? and ?");
 			
-			conn = dataSource.getConnection();
+			conn = dataSource.getConnection(); // 커넥션 얻기
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setInt(1, start);
+			pstmt.setInt(2, end);
 			
-			String sql = "SELECT bno, title, content, member_id, reg_date, hit_no FROM board ORDER BY bno";
-			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery(); // 게시물 목록 반환
 
 			while (rs.next()) {
 				// 전달받은 값을 바로 객체로 저장
-				BoardVO boardVO = new BoardVO();
-				boardVO.setBno(rs.getInt("bno"));
-				boardVO.setTitle(rs.getString("title"));
+				BoardVO board = new BoardVO();
+				board.setBno(rs.getInt("bno"));
+				board.setTitle(rs.getString("title"));
 				// content는 가져오지 않음. setter메소드로 속성을 넣고 있기 때문에 따로 생성자 설정할 필요는 x
-				boardVO.setMemberId(rs.getString("member_id"));
-				boardVO.setRegDate(rs.getDate("reg_date"));
-				boardVO.setHitNo(rs.getInt("hit_no"));
-				boardList.add(boardVO); // 게시물 목록에 추가
+				board.setMemberId(rs.getString("member_id"));
+				board.setRegDate(rs.getDate("reg_date"));
+				board.setHitNo(rs.getInt("hit_no"));
+				boardList.add(board); // 게시물 목록에 추가 (10개씩)
 			}
 		// '|' : 자바7에서 도입된 멀티캐치 구문에서 여러 예외처리를 한번에 할 때 사용하는 문법 '||'(or)는 사용할 수 없다
 		} catch (SQLException e) {
@@ -137,6 +188,12 @@ public class BoardDAO {
 		}
 		return boardList;
 	}
+	
+	
+	
+	
+	
+	
 	
 	/*
 	 * getBoard(int bno) :
@@ -309,10 +366,6 @@ public class BoardDAO {
 		
 	}
  	
-	
-	
-	
-	
 	/*
 	 * closeResource() :
 	 * 데이터베이스 관련 자원 반납(해제) 메소드
@@ -327,4 +380,27 @@ public class BoardDAO {
 			e.printStackTrace();
 		}
 	}
-}
+
+	/**
+	    * 전체 게시물의 갯수를 조회하는 메소드
+	    */
+	   public int getAllCount() {
+	      int totalCount = 0;
+	      StringBuffer sql = new StringBuffer();
+	      sql.append("select count(*) as totalCount ");
+	      sql.append(" from board");
+	      try {
+	         conn = dataSource.getConnection();
+	         pstmt = conn.prepareStatement(sql.toString());
+	         rs = pstmt.executeQuery();
+	         if(rs.next()) {
+	            totalCount = rs.getInt("totalCount");
+	            System.out.println("BoardDAO totlalCount : " + totalCount);
+	         }
+	      }catch (Exception e) {
+	         e.printStackTrace();
+	      }
+	      return totalCount;
+	   }
+	}
+
