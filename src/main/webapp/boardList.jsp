@@ -35,9 +35,9 @@
 		<main>
 			<h3>게시물 목록</h3>
 			<!-- 검색폼 -->
-			<form action="${contextPath}/boardList"  method="post" id="searchForm">
-				<label for="search">제목 검색 : </label>
-				<input type="text" name="search" id="search">
+			<form action="${contextPath}/boardList"  method="get" class="search-form">
+				<label for="keyword">검색 : </label>
+				<input type="text" name="keyword" id="keyword" placeholder="검색어 입력" />
 				<input type="submit" value="검색">
 			</form>
 			

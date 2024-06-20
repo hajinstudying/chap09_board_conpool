@@ -37,7 +37,7 @@ public class BoardDeleteServlet extends HttpServlet {
 		int bno = Integer.parseInt(request.getParameter("bno"));
 		
 		//boardDAO 객체 생성
-		BoardDAO boardDAO = new BoardDAO();
+		BoardDAO boardDAO = BoardDAO.getInstance();
 		int row = boardDAO.deleteBoard(bno);
 		
 		// contextPath 얻기

@@ -37,7 +37,7 @@ public class BoardUpdateServlet extends HttpServlet {
         // DAO에서 게시물 한 개 조회
         // 조회 메소드(getBoard())를 사용하기 위해 BoardDAO 객체 생성
         // 조회 메소드에서 가져온 객체를 BoardVO 객체에 담음 
-        BoardDAO boardDAO = new BoardDAO();
+        BoardDAO boardDAO = BoardDAO.getInstance();
         BoardVO boardVO = boardDAO.getBoard(bno);
 
         //request 영역에 수정할 게시물 객체를 저장
@@ -66,7 +66,7 @@ public class BoardUpdateServlet extends HttpServlet {
         boardVO.setContent(request.getParameter("content"));
         
         // boardVO 객체를 DAO에 전달해서 수정
-        BoardDAO boardDAO = new BoardDAO();
+        BoardDAO boardDAO = BoardDAO.getInstance();
         int row = boardDAO.updateBoard(boardVO); // 게시물 수정 메소드 호출
         
         // 컨텍스트패스

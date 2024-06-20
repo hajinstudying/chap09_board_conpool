@@ -32,7 +32,7 @@ public class BoardDetailServlet extends HttpServlet {
 		int bno = Integer.parseInt(request.getParameter("bno")); 
 
 		// 데이터베이스 전담 객체 생성
-		BoardDAO boardDAO = new BoardDAO();
+		BoardDAO boardDAO = BoardDAO.getInstance();
 		// 1. 조회수 증가
 		boardDAO.incrementHitNo(bno);
 		//2. 게시물 내용 조회 후 boardVO객체에 담음

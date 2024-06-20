@@ -25,9 +25,16 @@ public class BoardDAO {
 	private Connection conn = null; // 데이터베이스 접속을 위한 커넥션 객체
 	private PreparedStatement pstmt = null; // 쿼리문을 만들고 실행해주는 객체
 	private ResultSet rs = null; // 쿼리 결과를 받아오는 객체
-
-	/* 생성자 */
-	public BoardDAO () {
+	
+	// BoardDAO를 싱글톤 패턴으로 단 한개의 객체만 생성하기 위한 변수 선언
+	private static BoardDAO instance; 
+	
+	/* 
+	 * 커넥션을 위한 생성자
+	 * - private : 밖에서는 절대 호출할 수 없다. 밖에서는 객체 생성 불가
+	 *             싱글톤 패턴을 생성된 객체를 getInstace() 메소드로 호출해서 써야한다.
+	 */
+	private BoardDAO () {
 		try {
 			Context ctx = new InitialContext();
 			dataSource = (DataSource)ctx.lookup("java:comp/env/jdbc/oracle");
@@ -36,7 +43,22 @@ public class BoardDAO {
 		}
 	}
 	
-	
+	/*
+	 * BoardDAO 자신의 인스턴스(객체)를 반환해주는 메소드 *****
+	 * - 싱글톤 패턴을 위한 객체 생성 메소드
+	 * - 이 메소드는 최초로 호출될 때는 아직 객체가 생성되어 있지 않으므로
+	 *   그 때 단 한 번 객체로 생성된다.
+	 * - 그 다음부터는 이미 생성되어 있는 그 객체의 참조주소값을 반환한다.
+	 * - static : 객체 생성 없이도 밖에서 호출 할 수 있도록 하기 위해서.
+	 */
+	public static BoardDAO getInstance() {
+		// 인스턴스가 만들어진 적이 없으면 객체 생성
+		if(instance == null ) {
+			instance = new BoardDAO();
+		}
+		// 인스턴스가 생성이 되어있으면 그대로 반환
+		return instance;
+	}
 	
 	/*
 	 * insertBoard(...) :
@@ -243,11 +265,11 @@ public class BoardDAO {
 	
 	/*
 	 * searchBoard() :
-	 * 게시물 검색 메소드
+	 * 게시물 검색 기능 메소드
 	 */
-	public List<BoardVO> searchBoard(String input){
+	public List<BoardVO> searchBoardList(String keyword){
 		//디버깅 문자열
-		System.out.println("searchBoard() 메소드를 실행했습니다.");
+		System.out.println("searchBoardList() 메소드를 실행했습니다.");
 		//반환할 목록 일단 선언
 		List<BoardVO> boardList = new ArrayList<>();
 		
@@ -257,9 +279,10 @@ public class BoardDAO {
 			
 			//쿼리문 실행
 			String sql = "SELECT bno, title, content, member_id, reg_date, hit_no ";
-			sql += " FROM board WHERE title LIKE ?";
+			sql += " FROM board WHERE title LIKE ? OR content LIKE ?";
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, "%" + input + "%");
+			pstmt.setString(1, "%" + keyword + "%");
+			pstmt.setString(2, "%" + keyword + "%");
 			rs = pstmt.executeQuery(); // 해당 게시물 반환
 			
 			//게시물 반환

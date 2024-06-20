@@ -59,7 +59,7 @@ public class BoardServlet extends HttpServlet {
         BoardVO boardVO = new BoardVO (title, content, memberId);
         
         // DAO 영역의 메소드 호출
-     	BoardDAO boardDAO = new BoardDAO();
+        BoardDAO boardDAO = BoardDAO.getInstance();
         int row = boardDAO.insertBoard(boardVO);
      	
         // 게시물 등록 결과 확인
