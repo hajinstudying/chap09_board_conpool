@@ -1,6 +1,5 @@
 package com.javalab.dao;
 
-import java.nio.file.attribute.AclEntryPermission;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +8,6 @@ import java.util.*;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.print.attribute.PrintJobAttribute;
 import javax.sql.DataSource;
 
 import com.javalab.vo.BoardVO;
@@ -188,12 +186,6 @@ public class BoardDAO {
 		}
 		return boardList;
 	}
-	
-	
-	
-	
-	
-	
 	
 	/*
 	 * getBoard(int bno) :
@@ -381,26 +373,26 @@ public class BoardDAO {
 		}
 	}
 
-	/**
-	    * 전체 게시물의 갯수를 조회하는 메소드
-	    */
-	   public int getAllCount() {
-	      int totalCount = 0;
-	      StringBuffer sql = new StringBuffer();
-	      sql.append("select count(*) as totalCount ");
-	      sql.append(" from board");
-	      try {
-	         conn = dataSource.getConnection();
-	         pstmt = conn.prepareStatement(sql.toString());
-	         rs = pstmt.executeQuery();
-	         if(rs.next()) {
-	            totalCount = rs.getInt("totalCount");
-	            System.out.println("BoardDAO totlalCount : " + totalCount);
-	         }
-	      }catch (Exception e) {
-	         e.printStackTrace();
-	      }
-	      return totalCount;
-	   }
-	}
+	/*
+	 * 전체 게시물의 갯수를 조회하는 메소드
+	 */
+   public int getAllCount() {
+      int totalCount = 0;
+      StringBuffer sql = new StringBuffer();
+      sql.append("select count(*) as totalCount ");
+      sql.append(" from board");
+      try {
+         conn = dataSource.getConnection();
+         pstmt = conn.prepareStatement(sql.toString());
+         rs = pstmt.executeQuery();
+         if(rs.next()) {
+            totalCount = rs.getInt("totalCount");
+            System.out.println("BoardDAO totlalCount : " + totalCount);
+         }
+      }catch (Exception e) {
+         e.printStackTrace();
+      }
+      return totalCount;
+   }
+}
 

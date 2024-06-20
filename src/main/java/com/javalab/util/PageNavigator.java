@@ -75,7 +75,9 @@ public class PageNavigator {
          if(currentBlock > 1)
             isPrev = true;
          
-
+         /*
+          * 총 페이지 블럭(게시물 101개의 경우 2)이 단 한개인 경우 뒤로가기/앞으로가기를 표식 노출x
+          */
          if(totalNumOfBlock == 1){
             isNext = false;
             isPrev = false;

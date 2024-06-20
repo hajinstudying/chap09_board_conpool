@@ -41,8 +41,9 @@ public class BoardListServlet extends HttpServlet {
          pageNum = "1";
       }
       
-      BoardVO boardVO = new BoardVO();
+      BoardVO boardVO = new BoardVO(); 
       boardVO.setPageNum(pageNum); // 사용자가 요청한 pageNum
+      // boardVO 객체에는 pageNum, listCount, pagerPerBlock이 담김
       
       List<BoardVO> boardList = null;
       // 데이터베이스 전담 객체 생성
@@ -65,9 +66,9 @@ public class BoardListServlet extends HttpServlet {
       PageNavigator pageNavigator = new PageNavigator();
       // jsp 화면에 보여질 페이징 문자열 만들기
       String pageNums = pageNavigator.getPageNavigator(
-                              totalCount, 
-                              boardVO.getListCount(), 
-                              boardVO.getPagerPerBlock(), 
+                              totalCount, // 전체 게시물 수
+                              boardVO.getListCount(), // 한 페이지에 보여줄 게시물수 (10) 
+                              boardVO.getPagerPerBlock(), // 페이지에 보여줄 페이지번호 갯수(10)
                               Integer.parseInt(pageNum));
       // 디버깅 문자열
       System.out.println("pageNums : " + pageNums);
@@ -83,6 +84,4 @@ public class BoardListServlet extends HttpServlet {
       RequestDispatcher rd = request.getRequestDispatcher("/boardList.jsp");
       rd.forward(request, response);
    }
-
-
 }
