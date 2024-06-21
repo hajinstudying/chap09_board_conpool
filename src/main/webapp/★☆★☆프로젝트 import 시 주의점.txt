@@ -21,3 +21,7 @@ modules 선택해서 이름 변경 -> 저장 필수
 프로젝트 디렉토리 파일의 .settings 폴더 안에서
 org.eclipse.wst.common.component를 메모장으로 열기
 ->wb-module deploy-name 요소의 값을 현재 프로젝트 명으로 바꿔줌
+
+
+6.
+META-INF의 context.xml에서 sql developer의 username=을 알맞게 변경
